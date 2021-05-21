@@ -1,6 +1,6 @@
 import json
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox,QProgressBar
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox, QProgressBar
 from MainWindow import Ui_MainWindow
 from PdfMenu import Ui_PdfMenu
 from PdfMergeTool import PdfMergeTool
@@ -25,13 +25,25 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.statusbar.showMessage(file)
 
     def openPdfMenu(self):
+        self.closeOther()
         self.Maingridlayout.addWidget(self.pdfItem)
         self.pdfItem.show()
 
     def openOfficeMenu(self):
-        self.Maingridlayout.removeWidget()
+        self.closeOther()
         self.Maingridlayout.addWidget(self.officeItem)
         self.officeItem.show()
+
+    def closeOther(self):
+        """
+        删除其他的渲染的敞口
+        :return:
+        """
+        show_num = self.Maingridlayout.count()
+        print(show_num)
+        if show_num != 0:
+            for i in range(show_num):
+                self.Maingridlayout.itemAt(i).widget().close()
 
 
 class PdfMenu(QWidget, Ui_PdfMenu):
@@ -94,12 +106,9 @@ class Office2PDF(QWidget, Ui_officeToPdfForm):
         self.word2PdfBtn.clicked.connect(self.word_to_pdf)
         self.ppt2PdfBtn.clicked.connect(self.ppt_to_pdf)
 
-    def open_bar(self,num):
+    def open_bar(self, num):
         self.bar = QProgressBar(self)
         self.bar.maximum(num)
-
-
-
 
     def excel_to_pdf(self):
         targetPath = QFileDialog.getExistingDirectory(self, "选择合并的文件夹", "./")
