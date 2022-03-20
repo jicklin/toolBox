@@ -7,6 +7,7 @@ from diffAssign import Ui_diffAssignForm
 from PdfMergeTool import PdfMergeTool
 from Office2Pdf import Ui_officeToPdfForm
 from excel2pdf import PDFConverter
+from DiffAssignTool import DiffAssignTool
 
 
 class MainForm(QMainWindow, Ui_MainWindow):
@@ -36,6 +37,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.closeOther()
         self.Maingridlayout.addWidget(self.officeItem)
         self.officeItem.show()
+
     def openDiffAssignMenu(self):
         self.closeOther()
         self.Maingridlayout.addWidget(self.diffAssign)
@@ -167,17 +169,17 @@ class Office2PDF(QWidget, Ui_officeToPdfForm):
             QMessageBox.warning(self, "失败", "处理失败。" + str(e), QMessageBox.Yes | QMessageBox.No)
 
 
-class DiffAssign(QWidget,Ui_diffAssignForm):
+class DiffAssign(QWidget, Ui_diffAssignForm):
     def __init__(self):
-        super(DiffAssign,self).__init__()
+        super(DiffAssign, self).__init__()
         self.setupUi(self)
         self.fileSelectorBtn.clicked.connect(self.selectProcessFile)
         self.fileOutPathBtn.clicked.connect(self.selectOutPath)
         self.pushButton.clicked.connect(self.process)
 
     def selectProcessFile(self):
-        outPath = QFileDialog.getOpenFileUrl(self, "选择需要处理的excel文件", "./",'.xls|.xlsx')
-        self.fileShowInput.append(outPath)
+        file, ok = QFileDialog.getOpenFileName(self, "选择需要处理的excel文件", "./", 'EXCEL文件(*.xls);EXCEL文件(*.xlsx)')
+        self.fileShowInput.append(file)
 
     def selectOutPath(self):
         outPath = QFileDialog.getExistingDirectory(self, "不选择的话默认程序执行下的diff文件中", "./")
@@ -187,16 +189,14 @@ class DiffAssign(QWidget,Ui_diffAssignForm):
         inputFilePath = self.fileShowInput.toPlainText()
         outpath = self.outPathInput.toPlainText()
         num = self.groupNumInput.toPlainText()
-
-
-
-
-
-
-
-
-
-
+        tool = DiffAssignTool(inputFilePath, outpath, num)
+        try:
+            tool.create_file()
+            QMessageBox.information(self, "提示",
+                                    '恭喜马佳佳同学处理成功 ^_^',
+                                    QMessageBox.Yes | QMessageBox.No)
+        except BaseException as e:
+            QMessageBox.warning(self, "失败", "处理失败啦。" + str(e), QMessageBox.Yes | QMessageBox.No)
 
 
 
