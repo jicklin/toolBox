@@ -3,6 +3,7 @@ import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox, QProgressBar
 from MainWindow import Ui_MainWindow
 from PdfMenu import Ui_PdfMenu
+from diffAssign import Ui_diffAssignForm
 from PdfMergeTool import PdfMergeTool
 from Office2Pdf import Ui_officeToPdfForm
 from excel2pdf import PDFConverter
@@ -14,11 +15,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.pdfItem = PdfMenu()
         self.officeItem = Office2PDF()
+        self.diffAssign = DiffAssign()
 
         self.fileOpenAction.triggered.connect(self.openMsg)
         self.appCloseAction.triggered.connect(self.close)
         self.pdfProcessAction.triggered.connect(self.openPdfMenu)
         self.office2PdfAction.triggered.connect(self.openOfficeMenu)
+        self.diffAssignaction.triggered.connect(self.openDiffAssignMenu)
 
     def openMsg(self):
         file, ok = QFileDialog.getOpenFileName(self, "打开", "C:/", "All Files (*);;Text Files(*.txt)")
@@ -33,6 +36,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.closeOther()
         self.Maingridlayout.addWidget(self.officeItem)
         self.officeItem.show()
+    def openDiffAssignMenu(self):
+        self.closeOther()
+        self.Maingridlayout.addWidget(self.diffAssign)
+        self.diffAssign.show()
 
     def closeOther(self):
         """
@@ -158,6 +165,39 @@ class Office2PDF(QWidget, Ui_officeToPdfForm):
                                     QMessageBox.Yes | QMessageBox.No)
         except BaseException as e:
             QMessageBox.warning(self, "失败", "处理失败。" + str(e), QMessageBox.Yes | QMessageBox.No)
+
+
+class DiffAssign(QWidget,Ui_diffAssignForm):
+    def __init__(self):
+        super(DiffAssign,self).__init__()
+        self.setupUi(self)
+        self.fileSelectorBtn.clicked.connect(self.selectProcessFile)
+        self.fileOutPathBtn.clicked.connect(self.selectOutPath)
+        self.pushButton.clicked.connect(self.process)
+
+    def selectProcessFile(self):
+        outPath = QFileDialog.getOpenFileUrl(self, "选择需要处理的excel文件", "./",'.xls|.xlsx')
+        self.fileShowInput.append(outPath)
+
+    def selectOutPath(self):
+        outPath = QFileDialog.getExistingDirectory(self, "不选择的话默认程序执行下的diff文件中", "./")
+        self.outPathInput.setText(outPath)
+
+    def process(self):
+        inputFilePath = self.fileShowInput.toPlainText()
+        outpath = self.outPathInput.toPlainText()
+        num = self.groupNumInput.toPlainText()
+
+
+
+
+
+
+
+
+
+
+
 
 
 if __name__ == '__main__':
