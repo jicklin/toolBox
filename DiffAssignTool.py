@@ -26,8 +26,11 @@ class DiffAssignTool:
         self._group_num = groupnum
         if not os.path.exists(self._out_path):
             os.mkdir(self._out_path)
-        self._process_with_excel(targetfile)
-
+        try:
+            self._process_with_excel(targetfile)
+        except BaseException as e:
+            logging.error('分配差值失败啦', exc_info=True)
+            raise e
 
     def _process_with_excel(self, target_file):
         wb = load_workbook(target_file)
@@ -44,10 +47,12 @@ class DiffAssignTool:
             #     continue
             if code not in self.parcel_code_map:
                 self.parcel_code_map[code] = [
-                    RowDto(parcel_code, Decimal(str(total_area)), Decimal(str(child_area)), None, Decimal(str(child_area)))]
+                    RowDto(parcel_code, Decimal(str(total_area)), Decimal(str(child_area)), None,
+                           Decimal(str(child_area)))]
             else:
                 self.parcel_code_map[code].append(
-                    RowDto(parcel_code, Decimal(str(total_area)), Decimal(str(child_area)), None, Decimal(str(child_area))))
+                    RowDto(parcel_code, Decimal(str(total_area)), Decimal(str(child_area)), None,
+                           Decimal(str(child_area))))
 
         for key in self.parcel_code_map.keys():
             row_list = self.parcel_code_map[key]
@@ -55,7 +60,7 @@ class DiffAssignTool:
             child_sum = Decimal("0")
 
             cmpfun = lambda x: float(x.child_area)
-            row_list.sort(key=cmpfun,reverse=True)
+            row_list.sort(key=cmpfun, reverse=True)
 
             for row in row_list:
                 child_sum = child_sum + Decimal(str(row.child_area))
@@ -86,21 +91,25 @@ class DiffAssignTool:
         return num
 
     def create_file(self):
-        data_list = self.export_list
-        titles = ['标识码','总面积' ,'原面积', '差值', '校正值']
-        wb = Workbook()
-        sheet = wb.worksheets[0]
-        sheet.title = 'assign'
-        # 表头
-        for hx in range(1, len(titles) + 1):
-            sheet.cell(1, hx, titles[hx - 1])
-        for row in range(2, len(data_list) + 2):
-            sheet.cell(row, 1, data_list[row - 2].paracel_code)
-            sheet.cell(row, 2, data_list[row - 2].total_area)
-            sheet.cell(row, 3, data_list[row - 2].child_area)
-            sheet.cell(row, 4, data_list[row - 2].diff)
-            sheet.cell(row, 5, data_list[row - 2].changed_area)
-        wb.save(self._out_path + "/" + data_list[0].paracel_code[0:18] + '等标识码.xlsx')
+        try:
+            data_list = self.export_list
+            titles = ['标识码', '总面积', '原面积', '差值', '校正值']
+            wb = Workbook()
+            sheet = wb.worksheets[0]
+            sheet.title = 'assign'
+            # 表头
+            for hx in range(1, len(titles) + 1):
+                sheet.cell(1, hx, titles[hx - 1])
+            for row in range(2, len(data_list) + 2):
+                sheet.cell(row, 1, data_list[row - 2].paracel_code)
+                sheet.cell(row, 2, data_list[row - 2].total_area)
+                sheet.cell(row, 3, data_list[row - 2].child_area)
+                sheet.cell(row, 4, data_list[row - 2].diff)
+                sheet.cell(row, 5, data_list[row - 2].changed_area)
+            wb.save(self._out_path + "/" + data_list[0].paracel_code[0:18] + '等标识码.xlsx')
+        except BaseException as e:
+            logging.error('插入文档出错了', exc_info=True)
+            raise e
 
 
 """
@@ -128,7 +137,5 @@ if __name__ == '__main__':
     print(a)
     # print(1.0*Decimal('7'))
     print(1 + Decimal('7'))
-    tool = DiffAssignTool('E:\标识码.xlsx',None,18)
+    tool = DiffAssignTool('E:\标识码.xlsx', None, 18)
     tool.create_file()
-
-

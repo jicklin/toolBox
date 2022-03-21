@@ -186,11 +186,12 @@ class DiffAssign(QWidget, Ui_diffAssignForm):
         self.outPathInput.setText(outPath)
 
     def process(self):
-        inputFilePath = self.fileShowInput.toPlainText()
-        outpath = self.outPathInput.toPlainText()
-        num = self.groupNumInput.toPlainText()
-        tool = DiffAssignTool(inputFilePath, outpath, num)
         try:
+
+            inputFilePath = self.fileShowInput.toPlainText()
+            outpath = self.outPathInput.toPlainText()
+            num = self.groupNumInput.toPlainText()
+            tool = DiffAssignTool(inputFilePath, outpath, num)
             tool.create_file()
             QMessageBox.information(self, "提示",
                                     '恭喜马佳佳同学处理成功 ^_^',
