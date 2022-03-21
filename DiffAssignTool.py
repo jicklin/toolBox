@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO,  # 控制台打印的日志级别
 
 class DiffAssignTool:
 
-    def __init__(self, targetfile, outpath, groupnum):
+    def __init__(self, targetfile, outpath, groupnum, qtSignal):
         self.parcel_code_map = {}
         self.export_list = []
         self._target_file = targetfile
@@ -24,15 +24,18 @@ class DiffAssignTool:
         else:
             self._out_path = outpath
         self._group_num = groupnum
+        self.qt_signal = qtSignal
         if not os.path.exists(self._out_path):
             os.mkdir(self._out_path)
         try:
             self._process_with_excel(targetfile)
+
         except BaseException as e:
             logging.error('分配差值失败啦', exc_info=True)
             raise e
 
     def _process_with_excel(self, target_file):
+
         wb = load_workbook(target_file)
         if wb is None:
             raise BaseException('选择的文件不存在')
@@ -53,7 +56,7 @@ class DiffAssignTool:
                 self.parcel_code_map[code].append(
                     RowDto(parcel_code, Decimal(str(total_area)), Decimal(str(child_area)), None,
                            Decimal(str(child_area))))
-
+        self.qt_signal.emit('文件读取结束，开始计算差值，识别号共有' + str(len(self.parcel_code_map.keys())) + '组')
         for key in self.parcel_code_map.keys():
             row_list = self.parcel_code_map[key]
             total = row_list[0].total_area
@@ -75,6 +78,7 @@ class DiffAssignTool:
             while num > 0:
                 num = self.assign(row_list, num, unit)
             self.export_list.extend(row_list)
+        self.qt_signal.emit('差值分配完成！')
 
     def assign(self, child_list, num, unit):
         for child_row in child_list:
@@ -91,6 +95,7 @@ class DiffAssignTool:
 
     def create_file(self):
         try:
+            self.qt_signal.emit('开始写入excel文件')
             data_list = self.export_list
             titles = ['标识码', '总面积', '原面积', '差值', '校正值']
             wb = Workbook()
@@ -99,7 +104,9 @@ class DiffAssignTool:
             # 表头
             for hx in range(1, len(titles) + 1):
                 sheet.cell(1, hx, titles[hx - 1])
-            for row in range(2, len(data_list) + 2):
+            size = len(data_list)
+            for row in range(2, size + 2):
+                self.qt_signal.emit('共[' + str(size) + ']行,开始写入第[' + str(row - 1) + ']行')
                 sheet.cell(row, 1, data_list[row - 2].paracel_code)
                 sheet.cell(row, 2, data_list[row - 2].total_area)
                 sheet.cell(row, 3, data_list[row - 2].child_area)

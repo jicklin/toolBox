@@ -1,5 +1,6 @@
 import json
 import sys
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QFileDialog, QMessageBox, QProgressBar
 from MainWindow import Ui_MainWindow
 from PdfMenu import Ui_PdfMenu
@@ -8,6 +9,8 @@ from PdfMergeTool import PdfMergeTool
 from Office2Pdf import Ui_officeToPdfForm
 from excel2pdf import PDFConverter
 from DiffAssignTool import DiffAssignTool
+from PyQt5.QtCore import *
+from LaodingMessage import LoadingPop
 
 
 class MainForm(QMainWindow, Ui_MainWindow):
@@ -172,6 +175,7 @@ class Office2PDF(QWidget, Ui_officeToPdfForm):
 class DiffAssign(QWidget, Ui_diffAssignForm):
     def __init__(self):
         super(DiffAssign, self).__init__()
+        self.loading = LoadingPop()
         self.setupUi(self)
         self.fileSelectorBtn.clicked.connect(self.selectProcessFile)
         self.fileOutPathBtn.clicked.connect(self.selectOutPath)
@@ -185,20 +189,55 @@ class DiffAssign(QWidget, Ui_diffAssignForm):
         outPath = QFileDialog.getExistingDirectory(self, "不选择的话默认程序执行下的diff文件中", "./")
         self.outPathInput.setText(outPath)
 
+    def showSuccess(self,message):
+        self.loading.close()
+        QMessageBox.information(self, "提示",
+                                '恭喜马佳佳同学处理成功 ^_^',
+                                QMessageBox.Yes | QMessageBox.No)
+
+    def showError(self,message):
+        self.loading.close()
+        QMessageBox.warning(self, "失败", "处理失败啦。" + message, QMessageBox.Yes | QMessageBox.No)
+
     def process(self):
+
+        inputFilePath = self.fileShowInput.toPlainText()
+        outpath = self.outPathInput.toPlainText()
+        num = self.groupNumInput.toPlainText()
+        # tool = DiffAssignTool(inputFilePath, outpath, num)
+        # tool.create_file()
+        self.loading = LoadingPop()
+        self.loading.show()
+        self.thread_1 = Work(inputFilePath, outpath, num)
+        self.thread_1.messageTxtValue.connect(self.loading.set_message)
+        self.thread_1.showSuccess.connect(self.showSuccess)
+        self.thread_1.showError.connect(self.showError)
+        self.thread_1.start()
+
+
+
+
+
+class Work(QThread):
+    messageTxtValue = pyqtSignal(str)
+    showSuccess = pyqtSignal(str)
+    showError = pyqtSignal(str)
+
+    def __init__(self, inputFilePath, outpath, num):
+        super(Work, self).__init__()
+        self.inputFilePath = inputFilePath
+        self.outpath = outpath
+        self.num = num
+
+    def run(self):
+        self.messageTxtValue.emit('开始读取excel文件')
         try:
-
-            inputFilePath = self.fileShowInput.toPlainText()
-            outpath = self.outPathInput.toPlainText()
-            num = self.groupNumInput.toPlainText()
-            tool = DiffAssignTool(inputFilePath, outpath, num)
+            tool = DiffAssignTool(self.inputFilePath, self.outpath, self.num, self.messageTxtValue)
             tool.create_file()
-            QMessageBox.information(self, "提示",
-                                    '恭喜马佳佳同学处理成功 ^_^',
-                                    QMessageBox.Yes | QMessageBox.No)
-        except BaseException as e:
-            QMessageBox.warning(self, "失败", "处理失败啦。" + str(e), QMessageBox.Yes | QMessageBox.No)
+            self.showSuccess.emit('成功啦')
 
+        except BaseException as e:
+            self.showError.emit(str(e))
 
 
 if __name__ == '__main__':
