@@ -78,7 +78,6 @@ class DiffAssignTool:
 
     def assign(self, child_list, num, unit):
         for child_row in child_list:
-            diff = 0
             if child_row.diff is None:
                 diff = unit * Decimal('0.01')
             else:
@@ -107,6 +106,7 @@ class DiffAssignTool:
                 sheet.cell(row, 4, data_list[row - 2].diff)
                 sheet.cell(row, 5, data_list[row - 2].changed_area)
             wb.save(self._out_path + "/" + data_list[0].paracel_code[0:18] + '等标识码.xlsx')
+            wb.close()
         except BaseException as e:
             logging.error('插入文档出错了', exc_info=True)
             raise e
@@ -126,7 +126,7 @@ class RowDto:
         self.changed_area = changed_area
 
     def __repr__(self):
-        return repr((self.paracel_code, self.child_area, self.diff, self.changed_value))
+        return repr((self.paracel_code, self.child_area, self.diff, self.changed_area))
 
 
 if __name__ == '__main__':
