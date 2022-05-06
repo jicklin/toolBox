@@ -204,11 +204,19 @@ class DiffAssign(QWidget, Ui_diffAssignForm):
         inputFilePath = self.fileShowInput.toPlainText()
         outpath = self.outPathInput.toPlainText()
         num = self.groupNumInput.toPlainText()
+        decimal_place = self.decimalPlaceInput.toPlainText()
+        if len(decimal_place) == 0:
+            QMessageBox.warning(self, "提示", "要输入分配的小数位数哦。", QMessageBox.Yes | QMessageBox.No)
+            return
+        if len(num) == 0:
+            QMessageBox.warning(self, "提示", "要输入分组的位数哦。", QMessageBox.Yes | QMessageBox.No)
+
+
         # tool = DiffAssignTool(inputFilePath, outpath, num)
         # tool.create_file()
         self.loading = LoadingPop()
         self.loading.show()
-        self.thread_1 = Work(inputFilePath, outpath, num)
+        self.thread_1 = Work(inputFilePath, outpath, num, decimal_place)
         self.thread_1.messageTxtValue.connect(self.loading.set_message)
         self.thread_1.showSuccess.connect(self.showSuccess)
         self.thread_1.showError.connect(self.showError)
@@ -223,16 +231,17 @@ class Work(QThread):
     showSuccess = pyqtSignal(str)
     showError = pyqtSignal(str)
 
-    def __init__(self, inputFilePath, outpath, num):
+    def __init__(self, inputFilePath, outpath, num, decimal_place):
         super(Work, self).__init__()
         self.inputFilePath = inputFilePath
         self.outpath = outpath
         self.num = num
+        self.decimal_place = decimal_place
 
     def run(self):
         self.messageTxtValue.emit('开始读取excel文件')
         try:
-            tool = DiffAssignTool(self.inputFilePath, self.outpath, self.num, self.messageTxtValue)
+            tool = DiffAssignTool(self.inputFilePath, self.outpath, self.num, self.messageTxtValue, self.decimal_place)
             tool.create_file()
             self.showSuccess.emit('成功啦')
 

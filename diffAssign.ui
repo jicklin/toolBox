@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>684</width>
-    <height>398</height>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -127,8 +127,8 @@
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>287</y>
+     <x>170</x>
+     <y>330</y>
      <width>121</width>
      <height>61</height>
     </rect>
@@ -142,6 +142,34 @@
    </property>
    <property name="text">
     <string>开始处理</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_5">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>280</y>
+     <width>72</width>
+     <height>15</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>小数位数</string>
+   </property>
+  </widget>
+  <widget class="QTextEdit" name="decimalPlaceInput">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>270</y>
+     <width>104</width>
+     <height>31</height>
+    </rect>
    </property>
   </widget>
  </widget>
